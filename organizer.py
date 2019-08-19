@@ -13,7 +13,6 @@ class Handler(FileSystemEventHandler):
 		self.__HOME = os.environ["HOME"]
 		self.pdf_dst = os.path.join(self.__HOME, "Documents")
 		self.img_dst = os.path.join(self.__HOME, "Pictures")
-		# self.vid_dst = os.path.join(self.__HOME, "Videos")
 		self.tracked_folder = os.path.join(self.__HOME, "Downloads")
 		os.chdir(self.tracked_folder)
 
