@@ -18,12 +18,12 @@ class Handler(FileSystemEventHandler):
 
 	def on_modified(self, event):
 		global src, file
-		for file in os.listdir("."):
-			if os.path.isfile(file):
-				src = os.path.join(self.tracked_folder, file)
-				if file.endswith(".pdf"):
+		for root, dirs, files in os.walk(os.getcwd(), topdown=True):
+			for file in files:
+				src = os.path.join(root, file)
+				if src.endswith(".pdf"):
 					self.move_file(dst=self.pdf_dst)
-				elif imghdr.what(file):
+				elif imghdr.what(src):
 					self.move_file(dst=self.img_dst)
 
 	@staticmethod
@@ -39,7 +39,7 @@ observer.start()
 
 try:
 	while True:
-		time.sleep(1)
+		time.sleep(10)
 except KeyboardInterrupt:
 	observer.stop()
 	observer.join()
