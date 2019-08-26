@@ -20,10 +20,14 @@ class Handler(FileSystemEventHandler):
 		global src, file
 		for root, dirs, files in os.walk(os.getcwd(), topdown=True):
 			for file in files:
+				_, extension = os.path.splitext(file)
 				src = os.path.join(root, file)
-				if src.endswith(".pdf"):
+				if extension == ".pdf":
 					self.move_file(dst=self.pdf_dst)
 				elif imghdr.what(src):
+					if src.endswith(".part"):
+						time.sleep(10)
+						src = src.strip("part").strip(".")
 					self.move_file(dst=self.img_dst)
 
 	@staticmethod
