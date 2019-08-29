@@ -17,13 +17,12 @@ class Handler(FileSystemEventHandler):
 		os.chdir(self.tracked)
 
 	def on_modified(self, event):
-		if os.path.isfile(event.src_path):
+		if os.path.isfile(event.src_path) and not event.src_path.endswith(".part"):
 			_, extension = os.path.splitext(event.src_path)
 			if extension == ".pdf":
 				self.move_file(src=event.src_path, dst=self.pdf_dst)
-			elif imghdr.what(event.src_path):
-				if not event.src_path.endswith(".part"):
-					self.move_file(src=event.src_path, dst=self.img_dst)
+			elif imghdr.what(event.src_path) and os.path.basename(event.src_path) in os.listdir(os.getcwd()):
+                                self.move_file(src=event.src_path, dst=self.img_dst)
 
 	@staticmethod
 	def move_file(src, dst):
