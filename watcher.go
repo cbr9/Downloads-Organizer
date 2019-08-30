@@ -11,30 +11,32 @@ import (
 	"time"
 )
 
+var logger *os.File
+
 func main() {
 	var watcher Watcher
-	watcher.init()
+	watcher.config()
+	watcher.initialize()
 }
 
 type Watcher struct {
 	home          string
 	trackedFolder string
 	pdfDst        string
-	imgDst string
+	imgDst        string
 }
 
-func (w *Watcher) init() {
+func (w *Watcher) config() {
 	w.home = os.Getenv("HOME")
 	w.imgDst = path.Join(w.home, "Pictures")
 	w.pdfDst = path.Join(w.home, "Documents")
 	w.trackedFolder = path.Join(w.home, "Downloads")
-	w.config()
 }
 
-func (w Watcher) config() {
-	file, _ := os.OpenFile(".handling.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	defer file.Close()
-	log.SetOutput(file)
+func (w Watcher) initialize() {
+	logger, _ = os.OpenFile(".handling.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	defer logger.Close()
+	log.SetOutput(logger)
 	c := make(chan notify.EventInfo, 1)
 	err := notify.Watch(w.trackedFolder, c, notify.InMovedTo)
 	if err != nil {
@@ -42,7 +44,7 @@ func (w Watcher) config() {
 	}
 	defer notify.Stop(c)
 	for {
-		change := <- c
+		change := <-c
 		switch change.Event() {
 		case notify.InMovedTo:
 			if !strings.HasSuffix(change.Path(), ".part") {
@@ -65,8 +67,10 @@ func move(srcPath string, dstPath string) {
 	err := os.Rename(srcPath, newPath)
 	if err != nil {
 		log.Println("-", err)
+		_, _ = fmt.Fprintln(logger, "---------------------")
 	} else {
 		log.Println("- Succesfully moved", basename, "at", fmt.Sprint(time.Now().Clock()), "of", fmt.Sprint(time.Now().Date()))
+		_, _ = fmt.Fprintln(logger, "---------------------")
 	}
 }
 
